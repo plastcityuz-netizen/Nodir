@@ -1,7 +1,7 @@
 # BALANS AI
 
 O‘zbekiston bizneslari uchun AI buxgalteriya va biznes boshqaruv platformasi.
-**Hozirgi holat: 1-bosqich — dizayn tizimi + to‘liq marketing sayti.**
+**Hozirgi holat: 2-bosqich — premium marketing sayti, to‘liq uz/ru lokalizatsiya, SEO va xavfsizlik sozlamalari.**
 
 Asosiy g‘oya: **DATA → AI TAHLIL → QAROR → HARAKAT**.
 
@@ -19,7 +19,7 @@ npm run build      # production build
 npm run start      # production server
 npm run lint       # ESLint (0 warning)
 npm run typecheck  # TypeScript strict (0 xato)
-npm run test       # Vitest (47 test)
+npm run test       # Vitest (59 test)
 ```
 
 Node 20+ tavsiya etiladi (sandboxda Node 22 bilan tekshirilgan).
@@ -35,7 +35,7 @@ Atrof-muhit: `NEXT_PUBLIC_SITE_URL` — canonical/OG/sitemap uchun domen.
 | `/narxlar` | To‘liq tariflar: oylik/yillik switch, taqqoslash jadvali, to‘lov FAQ |
 | `/kirish` | Kirish formasi (demo rejim, Zod validatsiya) |
 | `/royxatdan-otish` | Ro‘yxatdan o‘tish: STIR, telefon, email, tarif; birinchi oy bepul natijasi |
-| `/maxfiylik`, `/shartlar` | Huquqiy sahifalar (yurist tasdiqlashi uchun TODO belgisi bilan) |
+| `/maxfiylik`, `/shartlar` | Huquqiy sahifalar (yurist tasdiqlashi tavsiya etiladi) |
 | `404`, `error`, `global-error` | Balans chizig‘i bilan xato sahifalari |
 | `/sitemap.xml`, `/robots.txt`, `/manifest.webmanifest`, `/opengraph-image` | SEO va PWA |
 
@@ -49,8 +49,8 @@ Atrof-muhit: `NEXT_PUBLIC_SITE_URL` — canonical/OG/sitemap uchun domen.
 - **Vitest 5** — narx, sinov/obuna, RBAC limitlari, formatlash, tarjima parity testlari
 - **Self-hosted shriftlar** (`public/fonts`): Manrope + Inter, latin + latin-ext
   (`o‘`, `g‘`) + cyrillic + cyrillic-ext. Tashqi font CDN’ga bog‘liqlik yo‘q.
-- Recharts paketi 2-bosqich (app) grafiklari uchun o‘rnatilgan; marketingda
-  grafiklar yengil qo‘lda yozilgan SVG (LCP va past quvvatli Android uchun).
+- **Barcha grafiklar yengil qo‘lda yozilgan SVG** — tashqi chart kutubxonasi
+  ishlatilmaydi (LCP va past quvvatli Android uchun).
 
 ## Tuzilma
 
@@ -64,7 +64,7 @@ components/
   auth/              login/signup formalari
   providers/         i18n, toast
 lib/
-  pricing.config.ts  YAGONA MANBA: tariflar, limitlar, sinov shartlari, QQS TODO
+  pricing.config.ts  YAGONA MANBA: tariflar, limitlar, sinov shartlari, QQS holati
   trial.ts           sinov va obuna holatlari (trial → active → past_due → read_only)
   format.ts          pul/sana/foiz/telefon/STIR — yagona formatlash qatlami
   i18n/              uz + ru lug‘atlar (type-safe), server cookie helper
@@ -130,27 +130,35 @@ ulanadi; `company_id` (multi-tenant) va AI uchun alohida `aiService` nazarda tut
 - `eslint@9` — `eslint-config-next@15` qo‘llab-quvvatlaydigan eng yangi satr (ESLint 10 faqat
   Next 16 ekotizimida). Bu dev-only vosita, zaiflik emas.
 
-## QA holati (1-bosqich)
+## QA holati (2-bosqich)
 
-Bajarilgan:
+Bajarilgan va o‘lchangan:
 
 - `npm run typecheck` — 0 xato (strict, `any` yo‘q).
 - `npm run lint` — 0 warning/error.
-- `npm run build` — muvaffaqiyatli (barcha route’lar).
-- `npm run test` — 47 test o‘tdi (format, narx/limit, sinov/obuna, validatsiya, i18n parity).
-- SSR tekshiruvi: barcha route’lar 200, noma’lum route 404; uz/ru renderlari
-  cookie orqali tekshirildi; ruscha sahifada o‘zbekcha UI matni qolmagan
-  (faqat kompaniya nomlari).
-- Raqamlar izchilligi qo‘lda tekshirildi (KPI = qismlar yig‘indisi).
-- Barcha ichki havolalar mavjud sahifalarga/bo‘limlarga olib boradi; o‘lik tugma yo‘q.
+- `npm run build` — muvaffaqiyatli, 17 route (statik + dinamik).
+- `npm run test` — **8 fayl / 59 test**: format, narx/limit, sinov/obuna,
+  validatsiya, i18n parity, kontent/taqiqlangan matnlar, SEO, login/signup
+  formalari va til almashtirish (Testing Library + jsdom).
+- Production serverda crawl: `/`, `/narxlar`, `/kirish`, `/royxatdan-otish`,
+  `/maxfiylik`, `/shartlar` — 200; noma’lum route — 404; barcha ichki havolalar 200.
+- `/icons/192`, `/icons/512` — `image/png`; `/manifest.webmanifest`,
+  `/sitemap.xml`, `/robots.txt`, `/opengraph-image`, `/apple-icon`, `/icon.svg` — 200.
+- uz/ru renderlari cookie orqali tekshirildi: `html lang`, title, description va
+  asosiy matnlar to‘liq almashadi; o‘zbekcha qoldiq yo‘q.
+- Xavfsizlik headerlari: HSTS, `X-Content-Type-Options`, `X-Frame-Options`,
+  `Referrer-Policy`, `Permissions-Policy`.
+- `npm audit` — 0 vulnerability; frontendda API kalit/sir yo‘q.
+- Barcha dekorativ SVG’lar `aria-hidden`; formalar `role="alert"`/`role="status"`
+  bilan e’lon qilinadi; 44px tap targetlar va `prefers-reduced-motion` qo‘llanadi.
 
 Tekshirilmagan (sababi bilan):
 
-- Lighthouse/CLS/LCP o‘lchovlari va Playwright/axe — sandboxda brauzer (Chromium
-  runtime kutubxonalari) mavjud emas, headless brauzer ishga tushmadi.
-- Haqiqiy qurilma/brauzer matritsasi (iOS Safari, Samsung Internet) — keyingi
-  bosqichda CI’da Playwright bilan.
-- Real backend, to‘lov shlyuzi va AI javoblari — hali ulanmagan (demo).
+- Lighthouse/CLS/LCP o‘lchovlari va Playwright/axe — sandboxda brauzer runtime
+  kutubxonalari yo‘q, headless brauzer ishga tushmadi.
+- Haqiqiy qurilma/brauzer matritsasi (iOS Safari, Samsung Internet) — CI’da
+  Playwright bilan keyingi qadam.
+- Real backend, to‘lov shlyuzi va AI javoblari — hali ulanmagan (demo rejim).
 
 ## Farazlar (egasi tasdiqlaydi)
 
@@ -158,19 +166,25 @@ Tekshirilmagan (sababi bilan):
    100 AI savoli. Bu matnlar saytda shu tarzda ko‘rsatilgan.
 2. Narxlar — O‘zbekiston bozoridagi o‘rtacha narxlarga moslangan boshlang‘ich
    taklif; QQS holati tasdiqlanmagan (`VAT.confirmed = false`), UI’da belgi bor.
-3. Telefon, email, Telegram — TODO placeholder (`+998 71 200 00 00`,
-   `salom@balans.ai`, `@balansai`), footerda aniq TODO izohi bilan.
-4. Ishonch qatori, mijoz logotiplari va raqamlar — TODO; soxta fikr/statistika
-   ishlatilmagan.
-5. Integratsiyalar, import (Excel/1C) va 2FA — rejada; “Tez orada” yoki
-   “rejada” deb yozilgan. Mavjud bo‘lmagan sertifikat da’vo qilinmagan.
-6. Marketing grafiklari — qo‘lda yozilgan SVG; Recharts 2-bosqichda app uchun.
+3. Aloqa kanali sifatida `salom@balans.ai` tanlangan; telefon va Telegram
+   ko‘rsatilmagan, chunki ular hali tasdiqlanmagan. Footer’da faqat mavjud
+   kanal va ofis joylashuvi ko‘rsatiladi.
+4. Ishonch qatori, mijoz logotiplari va raqamlar — yo‘q; soxta fikr/statistika
+   ishlatilmagan. Barcha raqamli misollar demo ekani ochiq yozilgan.
+5. Integratsiyalar, import (Excel/1C) va 2FA — rejada; “rejada” deb yozilgan.
+   Mavjud bo‘lmagan sertifikat, shifrlash yoki audit da’vo qilinmagan.
+6. Marketing grafiklari — qo‘lda yozilgan SVG; tashqi chart kutubxonasi yo‘q.
+7. Til cookie (`balans_lang`) orqali saqlanadi. Alohida URL’li uz/ru versiyalar
+   hozircha yo‘q, shuning uchun hreflang qo‘shilmagan — bu keyingi bosqichda
+   `/[lang]` marshrutizatsiyasi bilan hal qilinadi.
 
 ## Keyingi bosqichlar
 
-2. App shell, Dashboard (Balans Score gauge, cash flow, AI CFO paneli), RBAC.
-3. Modullar: Savdo, Ombor, Xarid, Ishlab chiqarish, HR, Moliya, Buxgalteriya, Hisobotlar.
-4. Onboarding, rollar matritsasi, obuna/to‘lov oqimi, Sozlamalar, PWA, optimizatsiya.
+1. `/[lang]` marshrutizatsiyasi va hreflang (uz-Latn / ru).
+2. Real backend (PostgreSQL/Supabase), multi-tenant `company_id`, `aiService`.
+3. App shell: Dashboard (Balans Score, cash flow, AI CFO paneli), RBAC.
+4. Modullar: Savdo, Ombor, Xarid, Ishlab chiqarish, HR, Moliya, Buxgalteriya, Hisobotlar.
+5. Onboarding, obuna/to‘lov oqimi, Sozlamalar, PWA va CI’da Playwright/axe.
 
 Har bosqich oxirida brefning 13-bo‘limidagi tekshiruvlar ishga tushiriladi va
 hisobot beriladi.

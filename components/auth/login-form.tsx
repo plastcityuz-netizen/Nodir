@@ -16,6 +16,7 @@ export function LoginForm() {
   const [values, setValues] = useState({ identifier: "", password: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
+  const [notice, setNotice] = useState("");
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -80,7 +81,7 @@ export function LoginForm() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <button
           type="button"
-          onClick={() => setErrors({ identifier: dict.auth.forgotNote })}
+          onClick={() => setNotice(dict.auth.forgotNote)}
           className="text-[11.5px] text-muted underline decoration-[var(--border-strong)] underline-offset-4 transition hover:text-ink"
         >
           {dict.auth.forgot}
@@ -92,6 +93,15 @@ export function LoginForm() {
           </Link>
         </span>
       </div>
+
+      {notice && (
+        <p
+          role="status"
+          className="rounded-xl border border-[var(--border)] bg-[color-mix(in_srgb,var(--elevated)_40%,transparent)] px-3 py-2.5 text-[11px] leading-relaxed text-muted"
+        >
+          {notice}
+        </p>
+      )}
 
       <Button type="submit" size="lg" className="w-full" disabled={status === "loading"}>
         {status === "loading" ? dict.auth.loggingIn : dict.auth.loginCta}

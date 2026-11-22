@@ -44,7 +44,7 @@ export function Field({
         />
       </div>
       {error ? (
-        <p id={errorId} className="flex items-start gap-1.5 text-[12px] text-danger">
+        <p id={errorId} role="alert" className="flex items-start gap-1.5 text-[12px] text-danger">
           <span aria-hidden>▲</span>
           {error}
         </p>

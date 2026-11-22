@@ -338,6 +338,7 @@ export function Modules() {
             </article>
           </Reveal>
         </div>
+        <p className="mt-4 text-[10.5px] text-muted/80">{dict.common.demoData}.</p>
       </div>
     </section>
   );

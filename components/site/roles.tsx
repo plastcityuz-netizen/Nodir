@@ -153,7 +153,9 @@ export function Roles() {
           </div>
         </Reveal>
 
-        <p className="mt-3 text-[10.5px] text-muted">{dict.roles.matrixNote}</p>
+        <p className="mt-3 text-[10.5px] text-muted">
+          {dict.roles.matrixNote} · {dict.common.demoData}.
+        </p>
       </div>
     </section>
   );

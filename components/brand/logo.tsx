@@ -51,7 +51,7 @@ export function Logo({
     <span className={clsx("inline-flex items-center gap-2.5", className)}>
       <BalanceMark className="size-8 shrink-0" />
       {!compact && (
-        <span className="flex items-baseline gap-1.5">
+        <span className="flex items-baseline gap-1.5 max-[359px]:hidden">
           <span className="font-display text-[17px] font-bold uppercase leading-none tracking-[0.14em] text-ink">
             {label}
           </span>
