@@ -1,4 +1,5 @@
 import { AiCfo } from "@/components/site/ai-cfo";
+import { Contact } from "@/components/site/contact";
 import { Factory } from "@/components/site/factory";
 import { Faq } from "@/components/site/faq";
 import { FinalCta } from "@/components/site/final-cta";
@@ -28,6 +29,7 @@ export default function HomePage() {
       <Security />
       <Pricing />
       <Faq />
+      <Contact />
       <FinalCta />
       <MobileTrialBar />
     </>

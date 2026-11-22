@@ -18,6 +18,7 @@ export function Footer() {
         { label: dict.footer.links.features, href: "/#mahsulot" },
         { label: dict.footer.links.ai, href: "/#ai-cfo" },
         { label: dict.footer.links.roles, href: "/#rollar" },
+        { label: dict.footer.links.demo, href: "/dashboard" },
         { label: dict.footer.links.pricing, href: "/narxlar" },
       ],
     },
@@ -51,8 +52,8 @@ export function Footer() {
       </div>
 
       <div className="wrap relative">
-        <div className="grid gap-10 lg:grid-cols-[1.5fr_.75fr_.75fr_.9fr]">
-          <div className="max-w-[360px]">
+        <div className="grid gap-10 lg:grid-cols-12">
+          <div className="max-w-[360px] lg:col-span-4">
             <Logo />
             <p className="mt-4 text-[13.5px] leading-relaxed text-muted">{dict.footer.desc}</p>
             <div className="mt-5 flex flex-wrap items-center gap-2">
@@ -66,7 +67,7 @@ export function Footer() {
           </div>
 
           {columns.map((column) => (
-            <div key={column.title}>
+            <div key={column.title} className="lg:col-span-2">
               <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
                 {column.title}
               </h2>
@@ -85,7 +86,7 @@ export function Footer() {
             </div>
           ))}
 
-          <div>
+          <div className="lg:col-span-2">
             <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
               {dict.footer.contact}
             </h2>

@@ -192,10 +192,15 @@ export function Hero() {
         <DashboardPreview showFloating={false} />
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-sm text-[12px] leading-relaxed text-muted">{dict.demo.note}</p>
-          <ButtonLink href="/royxatdan-otish" size="md" onClick={() => setDemoOpen(false)}>
-            {dict.demo.cta}
-            <ArrowRight />
-          </ButtonLink>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <ButtonLink href="/dashboard" size="md" variant="glass" onClick={() => setDemoOpen(false)}>
+              {dict.demo.openDashboard}
+            </ButtonLink>
+            <ButtonLink href="/royxatdan-otish" size="md" onClick={() => setDemoOpen(false)}>
+              {dict.demo.cta}
+              <ArrowRight />
+            </ButtonLink>
+          </div>
         </div>
       </Modal>
     </section>

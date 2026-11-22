@@ -1,7 +1,7 @@
 # BALANS AI
 
 O‘zbekiston bizneslari uchun AI buxgalteriya va biznes boshqaruv platformasi.
-**Hozirgi holat: 2-bosqich — premium marketing sayti, to‘liq uz/ru lokalizatsiya, SEO va xavfsizlik sozlamalari.**
+**Hozirgi holat: 3-bosqich — premium marketing sayti, yagona narx/sinov konfiguratsiyasi, demo kabinet, to‘liq uz/ru lokalizatsiya, SEO va xavfsizlik sozlamalari.**
 
 Asosiy g‘oya: **DATA → AI TAHLIL → QAROR → HARAKAT**.
 
@@ -19,7 +19,7 @@ npm run build      # production build
 npm run start      # production server
 npm run lint       # ESLint (0 warning)
 npm run typecheck  # TypeScript strict (0 xato)
-npm run test       # Vitest (59 test)
+npm run test       # Vitest (88 test)
 ```
 
 Node 20+ tavsiya etiladi (sandboxda Node 22 bilan tekshirilgan).
@@ -35,6 +35,7 @@ Atrof-muhit: `NEXT_PUBLIC_SITE_URL` — canonical/OG/sitemap uchun domen.
 | `/narxlar` | To‘liq tariflar: oylik/yillik switch, taqqoslash jadvali, to‘lov FAQ |
 | `/kirish` | Kirish formasi (demo rejim, Zod validatsiya) |
 | `/royxatdan-otish` | Ro‘yxatdan o‘tish: STIR, telefon, email, tarif; birinchi oy bepul natijasi |
+| `/dashboard` | **Demo kabinet**: KPI, tushum/foyda trendi, cash flow, xarajat tuzilmasi, AI tavsiyalar, qidiruv/filtrli operatsiyalar. `noindex`, barcha raqamlar demo |
 | `/maxfiylik`, `/shartlar` | Huquqiy sahifalar (yurist tasdiqlashi tavsiya etiladi) |
 | `404`, `error`, `global-error` | Balans chizig‘i bilan xato sahifalari |
 | `/sitemap.xml`, `/robots.txt`, `/manifest.webmanifest`, `/opengraph-image` | SEO va PWA |
@@ -58,13 +59,14 @@ Atrof-muhit: `NEXT_PUBLIC_SITE_URL` — canonical/OG/sitemap uchun domen.
 app/                 route’lar, layout, global CSS, SEO fayllari
 components/
   brand/             logotip va “Balans chizig‘i” motivi
-  dashboard/         dashboard mockup + SVG grafiklar
+  dashboard/         dashboard mockup, demo kabinet va SVG grafiklar
   site/              marketing bo‘limlari, navbar, footer, command palette
   ui/                Button, Field, Badge, Modal, Accordion, Switch, Reveal, Toast…
   auth/              login/signup formalari
   providers/         i18n, toast
 lib/
   pricing.config.ts  YAGONA MANBA: tariflar, limitlar, sinov shartlari, QQS holati
+  offer.ts           sinov matnlari (kun, AI limiti, karta) — faqat pricing.config dan
   trial.ts           sinov va obuna holatlari (trial → active → past_due → read_only)
   format.ts          pul/sana/foiz/telefon/STIR — yagona formatlash qatlami
   i18n/              uz + ru lug‘atlar (type-safe), server cookie helper
@@ -108,12 +110,17 @@ ulanadi; `company_id` (multi-tenant) va AI uchun alohida `aiService` nazarda tut
 
 ## Sinov shartlari va tariflar
 
-`lib/pricing.config.ts` — yagona manba:
+`lib/pricing.config.ts` — yagona manba; `lib/offer.ts` esa sinov matnlarini shu
+qiymatlardan hosil qiladi:
 
 - Start 449 000 / 4 490 000 so‘m; Business 990 000 / 9 900 000;
   Premium 1 790 000 / 17 900 000; Enterprise — kelishuv.
-- Yillik narx = oylik × 10 (2 oy bepul) — test bilan qat’iy tekshiriladi.
+- Yillik narx = oylik × 10 (2 oy bepul) — `YEARLY` dan hisoblanadi.
 - Sinov: 30 kun, karta shart emas, Premium darajasi, 100 AI savoli.
+- **Limitlar faqat `PLANS[].limits` da yoziladi**, `PLAN_LIMITS` shundan hosil
+  qilinadi. Premium’da “cheksiz” da’vosi yo‘q — aniq 2 000 AI savol/oy.
+- Barcha sinov chip’lari, FAQ javoblari va signup faktlari `offer.ts` dan
+  foydalanadi; testlar matnlar va konfiguratsiya mosligini tekshiradi.
 - Holatlar: `trial → active → past_due → read_only`; 7/3/1 kun eslatmalari;
   to‘lov kechiksa 3 kun imtiyoz, keyin faqat ko‘rish/eksport. Ma’lumot o‘chmaydi.
 - Limitlar (foydalanuvchi, kompaniya, AI savollari) va yumshoq upsell logikasi.
@@ -130,18 +137,21 @@ ulanadi; `company_id` (multi-tenant) va AI uchun alohida `aiService` nazarda tut
 - `eslint@9` — `eslint-config-next@15` qo‘llab-quvvatlaydigan eng yangi satr (ESLint 10 faqat
   Next 16 ekotizimida). Bu dev-only vosita, zaiflik emas.
 
-## QA holati (2-bosqich)
+## QA holati (3-bosqich)
 
 Bajarilgan va o‘lchangan:
 
 - `npm run typecheck` — 0 xato (strict, `any` yo‘q).
 - `npm run lint` — 0 warning/error.
-- `npm run build` — muvaffaqiyatli, 17 route (statik + dinamik).
-- `npm run test` — **8 fayl / 59 test**: format, narx/limit, sinov/obuna,
-  validatsiya, i18n parity, kontent/taqiqlangan matnlar, SEO, login/signup
-  formalari va til almashtirish (Testing Library + jsdom).
+- `npm run build` — muvaffaqiyatli, 18 route (statik + dinamik).
+- `npm run test` — **14 fayl / 88 test**: format, narx/limit, sinov/obuna,
+  validatsiya, i18n parity, kontent/taqiqlangan matnlar, SEO, login/signup,
+  AI CFO holatlari, demo kabinet filtrlari, navigatsiya/havolalar, demo
+  raqamlar izchilligi va ikki mavzudagi rang kontrasti (WCAG AA) —
+  Testing Library + jsdom.
 - Production serverda crawl: `/`, `/narxlar`, `/kirish`, `/royxatdan-otish`,
-  `/maxfiylik`, `/shartlar` — 200; noma’lum route — 404; barcha ichki havolalar 200.
+  `/maxfiylik`, `/shartlar` — 200; `/dashboard` — 200; noma’lum route — 404; barcha ichki havolalar 200.
+- `/dashboard` — 200, `noindex`; uz/ru renderlari va filtrlar tekshirilgan.
 - `/icons/192`, `/icons/512` — `image/png`; `/manifest.webmanifest`,
   `/sitemap.xml`, `/robots.txt`, `/opengraph-image`, `/apple-icon`, `/icon.svg` — 200.
 - uz/ru renderlari cookie orqali tekshirildi: `html lang`, title, description va
@@ -177,6 +187,10 @@ Tekshirilmagan (sababi bilan):
 7. Til cookie (`balans_lang`) orqali saqlanadi. Alohida URL’li uz/ru versiyalar
    hozircha yo‘q, shuning uchun hreflang qo‘shilmagan — bu keyingi bosqichda
    `/[lang]` marshrutizatsiyasi bilan hal qilinadi.
+8. `/dashboard` — ataylab **ochiq demo**: real autentifikatsiya yo‘q, barcha
+   raqamlar `lib/mock/demo.ts` dan va sahifada demo belgisi bor. U `noindex`.
+9. Premium AI limiti — 2 000 savol/oy (fair-use “cheksiz” emas). Enterprise
+   limitlari individual shartnomada; RBAC serveri backend bilan birga keladi.
 
 ## Keyingi bosqichlar
 

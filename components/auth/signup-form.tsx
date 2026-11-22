@@ -1,12 +1,13 @@
 "use client";
 
 import { ArrowRight, BadgeCheck, Check, Landmark, Mail, Phone } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
-import { normalizeTin } from "@/lib/format";
-import { PLANS, TRIAL, type PlanId } from "@/lib/pricing.config";
+import { money, normalizeTin } from "@/lib/format";
+import { PLANS, type PlanId } from "@/lib/pricing.config";
+import { trialChip } from "@/lib/offer";
 import { createSignupSchema } from "@/lib/validation";
 
 export function SignupForm({ initialPlan }: { initialPlan: PlanId }) {
@@ -23,6 +24,13 @@ export function SignupForm({ initialPlan }: { initialPlan: PlanId }) {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
+  const timer = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timer.current !== null) window.clearTimeout(timer.current);
+    };
+  }, []);
 
   const update = (key: keyof typeof values, value: string | boolean) => {
     setValues((state) => ({ ...state, [key]: value }));
@@ -45,7 +53,10 @@ export function SignupForm({ initialPlan }: { initialPlan: PlanId }) {
     }
     setErrors({});
     setStatus("loading");
-    window.setTimeout(() => setStatus("done"), 700);
+    timer.current = window.setTimeout(() => {
+      timer.current = null;
+      setStatus("done");
+    }, 700);
   };
 
   if (status === "done") {
@@ -143,9 +154,7 @@ export function SignupForm({ initialPlan }: { initialPlan: PlanId }) {
             <option key={plan.id} value={plan.id}>
               {plan.name} —{" "}
               {plan.monthly
-                ? lang === "uz"
-                  ? `${(plan.monthly / 1000).toLocaleString("ru-RU").replace(/\u00A0/g, " ")} ming so‘m/oy`
-                  : `${(plan.monthly / 1000).toLocaleString("ru-RU").replace(/\u00A0/g, " ")} тыс. сум/мес`
+                ? `${money(plan.monthly, lang, { compact: true, decimals: 0 })}/${dict.common.month}`
                 : dict.pricing.customPrice}
             </option>
           ))}
@@ -181,9 +190,7 @@ export function SignupForm({ initialPlan }: { initialPlan: PlanId }) {
       </Button>
 
       <div className="flex flex-wrap items-center justify-between gap-2 text-[10.5px] text-muted">
-        <span>
-          {TRIAL.days} {lang === "uz" ? "kun · karta shart emas" : "дней · карта не нужна"}
-        </span>
+        <span>{trialChip(lang)}</span>
         <span className="inline-flex items-center gap-1 text-emerald-ink">
           <BadgeCheck className="size-3" aria-hidden />
           {dict.auth.loginDemoTitle}

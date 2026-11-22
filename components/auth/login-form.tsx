@@ -2,7 +2,7 @@
 
 import { ArrowRight, CheckCircle2, Lock, Mail } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
@@ -17,6 +17,13 @@ export function LoginForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
   const [notice, setNotice] = useState("");
+  const timer = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timer.current !== null) window.clearTimeout(timer.current);
+    };
+  }, []);
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -32,7 +39,10 @@ export function LoginForm() {
     }
     setErrors({});
     setStatus("loading");
-    window.setTimeout(() => setStatus("done"), 650);
+    timer.current = window.setTimeout(() => {
+      timer.current = null;
+      setStatus("done");
+    }, 650);
   };
 
   if (status === "done") {

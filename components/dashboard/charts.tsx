@@ -10,6 +10,8 @@ export function AreaChart({
   showGrid = true,
   className,
   strokeWidth = 1.6,
+  title,
+  description,
 }: {
   values: number[];
   width?: number;
@@ -19,6 +21,9 @@ export function AreaChart({
   showGrid?: boolean;
   className?: string;
   strokeWidth?: number;
+  /** Berilsa, grafik ekran o‘quvchiga nom va tavsif bilan e’lon qilinadi. */
+  title?: string;
+  description?: string;
 }) {
   const points = scalePoints(values, width, height, 8);
   const line = smoothPath(points);
@@ -37,9 +42,12 @@ export function AreaChart({
       viewBox={`0 0 ${width} ${height}`}
       className={clsx("h-auto w-full", className)}
       fill="none"
-      aria-hidden
+      role={title ? "img" : undefined}
+      aria-hidden={title ? undefined : true}
+      aria-label={title}
       preserveAspectRatio="none"
     >
+      {description && <desc>{description}</desc>}
       <defs>
         <linearGradient id={`area-${id}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={stroke} stopOpacity="0.28" />

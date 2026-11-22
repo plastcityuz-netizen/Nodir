@@ -1,6 +1,13 @@
+"use client";
+
 import clsx from "clsx";
+import { useId } from "react";
 
 export function BalanceMark({ className }: { className?: string }) {
+  const uid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
+  const leftId = `bm-left-${uid}`;
+  const rightId = `bm-right-${uid}`;
+
   return (
     <svg
       viewBox="0 0 32 32"
@@ -11,13 +18,13 @@ export function BalanceMark({ className }: { className?: string }) {
       <circle cx="16" cy="16" r="14.25" stroke="var(--border-strong)" strokeWidth="1" />
       <path
         d="M12 8.5a7.5 7.5 0 0 0 0 15"
-        stroke="url(#bm-left)"
+        stroke={`url(#${leftId})`}
         strokeWidth="1.8"
         strokeLinecap="round"
       />
       <path
         d="M20 8.5a7.5 7.5 0 0 1 0 15"
-        stroke="url(#bm-right)"
+        stroke={`url(#${rightId})`}
         strokeWidth="1.8"
         strokeLinecap="round"
       />
@@ -25,11 +32,11 @@ export function BalanceMark({ className }: { className?: string }) {
       <circle cx="16" cy="16" r="5.2" fill="var(--emerald)" opacity="0.18" />
       <path d="M16 12.8v-4.3M16 23.5v-4.3" stroke="var(--emerald)" strokeWidth="1" opacity="0.5" />
       <defs>
-        <linearGradient id="bm-left" x1="12" y1="8" x2="12" y2="24" gradientUnits="userSpaceOnUse">
+        <linearGradient id={leftId} x1="12" y1="8" x2="12" y2="24" gradientUnits="userSpaceOnUse">
           <stop stopColor="var(--emerald)" />
           <stop offset="1" stopColor="var(--cyan)" stopOpacity="0.65" />
         </linearGradient>
-        <linearGradient id="bm-right" x1="20" y1="8" x2="20" y2="24" gradientUnits="userSpaceOnUse">
+        <linearGradient id={rightId} x1="20" y1="8" x2="20" y2="24" gradientUnits="userSpaceOnUse">
           <stop stopColor="var(--violet)" stopOpacity="0.85" />
           <stop offset="1" stopColor="var(--emerald)" stopOpacity="0.7" />
         </linearGradient>
