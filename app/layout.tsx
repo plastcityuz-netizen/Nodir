@@ -5,6 +5,7 @@ import { Navbar } from "@/components/site/navbar";
 import { ScrollProgress } from "@/components/site/scroll-progress";
 import { CommandProvider } from "@/components/site/command-palette";
 import { I18nProvider } from "@/components/providers/i18n-provider";
+import { MotionProvider } from "@/components/providers/motion-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { getI18n, HTML_LANG, OG_LOCALE } from "@/lib/i18n/server";
 
@@ -108,14 +109,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           Asosiy kontentga o‘tish
         </a>
         <I18nProvider initialLang={lang}>
-          <ToastProvider>
-            <CommandProvider>
-              <ScrollProgress />
-              <Navbar />
-              <main id="asosiy">{children}</main>
-              <Footer />
-            </CommandProvider>
-          </ToastProvider>
+          <MotionProvider>
+            <ToastProvider>
+              <CommandProvider>
+                <ScrollProgress />
+                <Navbar />
+                <main id="asosiy">{children}</main>
+                <Footer />
+              </CommandProvider>
+            </ToastProvider>
+          </MotionProvider>
         </I18nProvider>
       </body>
     </html>

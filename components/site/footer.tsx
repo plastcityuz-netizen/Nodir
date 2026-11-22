@@ -128,7 +128,7 @@ export function Footer() {
 
         <div className="mt-12 flex flex-col gap-4 border-t border-[var(--border)] pt-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11.5px] text-muted">
-            <span>
+            <span suppressHydrationWarning>
               © {year} BALANS AI. {dict.footer.rights}
             </span>
             <span className="hidden sm:inline" aria-hidden>

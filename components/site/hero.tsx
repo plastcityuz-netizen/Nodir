@@ -16,12 +16,12 @@ function Magnetic({ children }: { children: ReactNode }) {
   const sx = useSpring(x, { stiffness: 220, damping: 18 });
   const sy = useSpring(y, { stiffness: 220, damping: 18 });
 
-  if (reduce) return <>{children}</>;
-
   return (
     <motion.div
-      style={{ x: sx, y: sy }} className="inline-flex w-full justify-center sm:w-auto"
+      style={{ x: sx, y: sy }}
+      className="inline-flex w-full justify-center sm:w-auto"
       onMouseMove={(event) => {
+        if (reduce) return;
         const rect = event.currentTarget.getBoundingClientRect();
         x.set(((event.clientX - rect.left) / rect.width - 0.5) * 12);
         y.set(((event.clientY - rect.top) / rect.height - 0.5) * 8);
@@ -147,11 +147,7 @@ export function Hero() {
           </div>
 
           <motion.div
-            style={
-              reduce
-                ? undefined
-                : { y: previewY, rotateX: springX, rotateY: springY, transformPerspective: 1400 }
-            }
+            style={{ y: previewY, rotateX: springX, rotateY: springY, transformPerspective: 1400 }}
             onMouseMove={(event) => {
               if (reduce) return;
               const rect = event.currentTarget.getBoundingClientRect();
@@ -164,8 +160,8 @@ export function Hero() {
               rotateX.set(0);
               rotateY.set(0);
             }}
-            initial={reduce ? undefined : { opacity: 0, y: 28 }}
-            animate={reduce ? undefined : { opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 28 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="relative z-10 lg:pl-4"
           >
@@ -178,7 +174,7 @@ export function Hero() {
         </div>
 
         <motion.div
-          style={reduce ? undefined : { scaleX: lineScale, opacity: lineOpacity }}
+          style={{ scaleX: lineScale, opacity: lineOpacity }}
           className="mt-12 sm:mt-16 lg:mt-20"
         >
           <BalanceLine quiet className="origin-center" />

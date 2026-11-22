@@ -62,7 +62,7 @@ export function BalanceLine({
         )}
 
         {/* debet va kredit zarralari markazga oqib keladi */}
-        {!broken && !quiet && !reduce && (
+        {!broken && !quiet && (
           <>
             {[0, 1, 2].map((index) => (
               <motion.span
