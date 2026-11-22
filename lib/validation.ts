@@ -31,7 +31,7 @@ export function createSignupSchema(m: ValidationMessages) {
       .min(1, m.required)
       .refine((value) => isValidEmail(value), m.email),
     plan: z.enum(["start", "business", "premium", "enterprise"]),
-    terms: z.literal(true, { errorMap: () => ({ message: m.terms }) }),
+    terms: z.literal(true, { message: m.terms }),
   });
 }
 

@@ -41,12 +41,12 @@ Atrof-muhit: `NEXT_PUBLIC_SITE_URL` — canonical/OG/sitemap uchun domen.
 
 ## Stek
 
-- **Next.js 15** (App Router) + **TypeScript strict** (`noUncheckedIndexedAccess`, `noUnused*`)
+- **Next.js 15.5.29** (App Router, xavfsizlik backport) + **React 19.3** + **TypeScript strict** (`noUncheckedIndexedAccess`, `noUnused*`)
 - **Tailwind CSS 3.4** — tokenlar CSS variables orqali, Dark/Light
 - **Framer Motion 11** — scroll-reveal, KPI count-up, parallax, magnit CTA, tema o‘tishi
 - **Lucide React** — bir xil 1.5px chiziqli ikonkalar
-- **Zod** — forma validatsiyasi
-- **Vitest** — narx, sinov/obuna, RBAC limitlari, formatlash, tarjima parity testlari
+- **Zod 4** — forma validatsiyasi
+- **Vitest 5** — narx, sinov/obuna, RBAC limitlari, formatlash, tarjima parity testlari
 - **Self-hosted shriftlar** (`public/fonts`): Manrope + Inter, latin + latin-ext
   (`o‘`, `g‘`) + cyrillic + cyrillic-ext. Tashqi font CDN’ga bog‘liqlik yo‘q.
 - Recharts paketi 2-bosqich (app) grafiklari uchun o‘rnatilgan; marketingda
@@ -117,6 +117,18 @@ ulanadi; `company_id` (multi-tenant) va AI uchun alohida `aiService` nazarda tut
 - Holatlar: `trial → active → past_due → read_only`; 7/3/1 kun eslatmalari;
   to‘lov kechiksa 3 kun imtiyoz, keyin faqat ko‘rish/eksport. Ma’lumot o‘chmaydi.
 - Limitlar (foydalanuvchi, kompaniya, AI savollari) va yumshoq upsell logikasi.
+
+## Xavfsizlik yangilanishi (Vercel blokirovkasidan keyin)
+
+- `next` 15.1.6 → **15.5.29** (15.x rasmiy xavfsizlik backport liniyasi), `react`/`react-dom` → **19.3.1**.
+- `zod` → **4.6.7**, `vitest` → **5.1.1**, `postcss` → **8.5.33**, `eslint` → **9.39.5**.
+- Next 15 o‘z ichida `postcss@8.4.31` ni pin qiladi; `overrides` orqali **8.5.33** ga majburlangan
+  (API mos, build va CSS chiqishi tekshirilgan).
+- `npm audit` — **0 vulnerability** (production va dev).
+- UI, sahifalar, autentifikatsiya va biznes logika o‘zgarmagan. Zod 4 uchun faqat bitta
+  texnik moslashtirish: `z.literal(true, { errorMap })` → `z.literal(true, { message })`.
+- `eslint@9` — `eslint-config-next@15` qo‘llab-quvvatlaydigan eng yangi satr (ESLint 10 faqat
+  Next 16 ekotizimida). Bu dev-only vosita, zaiflik emas.
 
 ## QA holati (1-bosqich)
 
