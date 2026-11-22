@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUp, Mail, Phone, Send } from "lucide-react";
+import { ArrowUp, Mail, MapPin } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { useI18n } from "@/components/providers/i18n-provider";
@@ -92,15 +92,6 @@ export function Footer() {
             <ul className="mt-4 flex flex-col gap-3">
               <li>
                 <a
-                  href="tel:+998712000000"
-                  className="inline-flex items-center gap-2 text-[13.5px] text-ink/85 transition hover:text-emerald-ink"
-                >
-                  <Phone className="size-3.5 text-muted" aria-hidden />
-                  {dict.footer.phone}
-                </a>
-              </li>
-              <li>
-                <a
                   href="mailto:salom@balans.ai"
                   className="inline-flex items-center gap-2 text-[13.5px] text-ink/85 transition hover:text-emerald-ink"
                 >
@@ -108,21 +99,11 @@ export function Footer() {
                   {dict.footer.email}
                 </a>
               </li>
-              <li>
-                <a
-                  href="https://t.me/balansai"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="inline-flex items-center gap-2 text-[13.5px] text-ink/85 transition hover:text-emerald-ink"
-                >
-                  <Send className="size-3.5 text-muted" aria-hidden />
-                  {dict.footer.telegram}
-                </a>
+              <li className="inline-flex items-center gap-2 text-[13.5px] text-ink/85">
+                <MapPin className="size-3.5 text-muted" aria-hidden />
+                {dict.footer.location}
               </li>
             </ul>
-            <p className="mt-3 max-w-[240px] text-[10.5px] leading-relaxed text-muted/80">
-              {dict.footer.todoNote}
-            </p>
           </div>
         </div>
 

@@ -71,6 +71,9 @@ export function MobileShowcase() {
                 <span className="rounded-full border border-[var(--border)] px-2.5 py-1 text-[10.5px] text-muted">
                   {dict.mobile.note}
                 </span>
+                <span className="rounded-full border border-warning/25 bg-[color-mix(in_srgb,var(--warning)_8%,transparent)] px-2.5 py-1 text-[10.5px] text-warning">
+                  {dict.common.demoData}
+                </span>
               </div>
             </Reveal>
           </div>

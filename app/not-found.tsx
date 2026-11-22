@@ -1,7 +1,13 @@
 import { ArrowRight } from "lucide-react";
 import { BalanceLine } from "@/components/brand/balance-line";
 import { ButtonLink } from "@/components/ui/button";
+import type { Metadata } from "next";
 import { getI18n } from "@/lib/i18n/server";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { dict } = await getI18n();
+  return { title: dict.meta.notFoundTitle, robots: { index: false, follow: false } };
+}
 
 export default async function NotFound() {
   const { dict } = await getI18n();

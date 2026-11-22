@@ -8,8 +8,7 @@ import { I18nProvider } from "@/components/providers/i18n-provider";
 import { MotionProvider } from "@/components/providers/motion-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { getI18n, HTML_LANG, OG_LOCALE } from "@/lib/i18n/server";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://balans.ai";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -27,7 +26,12 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(SITE_URL),
     title: dict.meta.title,
     description: dict.meta.description,
-    applicationName: "BALANS AI",
+    applicationName: SITE_NAME,
+    category: "business",
+    referrer: "strict-origin-when-cross-origin",
+    formatDetection: { telephone: false, address: false, email: false },
+    manifest: "/manifest.webmanifest",
+    appleWebApp: { capable: true, title: SITE_NAME, statusBarStyle: "black-translucent" },
     keywords: [
       "buxgalteriya",
       "biznes boshqaruv",
@@ -47,13 +51,20 @@ export async function generateMetadata(): Promise<Metadata> {
       title: dict.meta.title,
       description: dict.meta.description,
       url: SITE_URL,
-      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "BALANS AI" }],
+      images: [
+        {
+          url: `${SITE_URL}/opengraph-image`,
+          width: 1200,
+          height: 630,
+          alt: "BALANS AI — AI buxgalteriya va biznes boshqaruv platformasi",
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: dict.meta.title,
       description: dict.meta.description,
-      images: ["/opengraph-image"],
+      images: [`${SITE_URL}/opengraph-image`],
     },
     robots: { index: true, follow: true },
   };
@@ -82,6 +93,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           type="font/woff2"
           crossOrigin="anonymous"
         />
+        <link
+          rel="preload"
+          href="/fonts/inter-latin-ext-wght-normal.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/manrope-latin-ext-wght-normal.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
         {lang === "ru" && (
           <>
             <link
@@ -102,6 +127,30 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
       </head>
       <body className="min-h-dvh antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "Organization",
+                  name: SITE_NAME,
+                  url: SITE_URL,
+                  logo: `${SITE_URL}/icon.svg`,
+                  description: SITE_DESCRIPTION,
+                },
+                {
+                  "@type": "WebSite",
+                  name: SITE_NAME,
+                  url: SITE_URL,
+                  inLanguage: HTML_LANG[lang],
+                  description: SITE_DESCRIPTION,
+                },
+              ],
+            }),
+          }}
+        />
         <a
           href="#asosiy"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-lg focus:bg-emerald-fill focus:px-4 focus:py-2 focus:text-[#04130E]"

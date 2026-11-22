@@ -2,8 +2,8 @@
  * YAGONA MANBA: tariflar, narxlar, limitlar va sinov shartlari.
  * UI, hisob-kitob va testlar faqat shu fayldan o‘qiydi.
  *
- * TODO(egasi): quyidagi qiymatlar O‘zbekiston bozoridagi o‘rtacha narxlarga
- * moslangan boshlang‘ich taklif. Ishga tushirishdan oldin egasi tasdiqlaydi,
+ * Quyidagi qiymatlar O‘zbekiston bozoridagi o‘rtacha narxlarga moslangan
+ * boshlang‘ich taklif. Yakuniy shartlar shartnomada belgilanadi,
  * shu jumladan QQS holati va “karta shart emas” va’dasi.
  */
 
@@ -110,7 +110,7 @@ export const ADDONS = [
 ] as const;
 
 export const VAT = {
-  /** TODO(egasi): QQS holati tasdiqlanmagan — UI’da “QQS holati egasi tasdiqlaydi” deb ko‘rsatiladi */
+  /** QQS holati hali aniqlanmagan — UI’da to‘lov sahifasida ko‘rsatiladi deb yoziladi */
   confirmed: false,
   rate: 0.12,
 } as const;
@@ -131,7 +131,7 @@ export function monthlyEquivalent(plan: Plan): number | null {
   return Math.round(plan.yearly / 12);
 }
 
-/** Tarif limitlarini tekshirish — keyingi bosqichda obuna logikasi shu funksiyaga tayanadi */
+/** Tarif limitlarini tekshirish — obuna logikasi shu funksiyaga tayanadi */
 export type UsageSnapshot = { users: number; companies: number; aiQuestions: number };
 
 export const PLAN_LIMITS: Record<PlanId, { users: number | null; companies: number | null; aiQuestions: number | null }> = {

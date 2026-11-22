@@ -1,13 +1,12 @@
 "use client";
 
-import { ArrowRight, BadgeCheck, CalendarClock, Check, Landmark, Mail, Phone } from "lucide-react";
+import { ArrowRight, BadgeCheck, Check, Landmark, Mail, Phone } from "lucide-react";
 import { useState } from "react";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
-import { formatDate, normalizeTin } from "@/lib/format";
+import { normalizeTin } from "@/lib/format";
 import { PLANS, TRIAL, type PlanId } from "@/lib/pricing.config";
-import { trialEnd } from "@/lib/trial";
 import { createSignupSchema } from "@/lib/validation";
 
 export function SignupForm({ initialPlan }: { initialPlan: PlanId }) {
@@ -50,7 +49,6 @@ export function SignupForm({ initialPlan }: { initialPlan: PlanId }) {
   };
 
   if (status === "done") {
-    const ends = trialEnd(new Date());
     return (
       <div>
         <div className="rounded-2xl border border-emerald/30 bg-[linear-gradient(150deg,color-mix(in_srgb,var(--emerald)_12%,transparent),transparent)] p-5">
@@ -60,11 +58,6 @@ export function SignupForm({ initialPlan }: { initialPlan: PlanId }) {
           </div>
           <h2 className="mt-2 font-display text-[20px] font-semibold text-ink">{dict.auth.successTitle}</h2>
           <p className="mt-1 text-[12px] text-muted">{dict.auth.successSub}</p>
-          <div className="mt-3 flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2">
-            <CalendarClock className="size-3.5 text-emerald-ink" aria-hidden />
-            <span className="text-[11px] text-muted">{dict.auth.successEnds}:</span>
-            <span className="text-[11.5px] font-medium text-ink num">{formatDate(ends)}</span>
-          </div>
           <ul className="mt-3 grid gap-1.5">
             {dict.auth.successFacts.map((fact) => (
               <li key={fact} className="flex items-start gap-1.5 text-[11.5px] text-ink/85">
@@ -73,22 +66,6 @@ export function SignupForm({ initialPlan }: { initialPlan: PlanId }) {
               </li>
             ))}
           </ul>
-        </div>
-
-        <div className="mt-5">
-          <h3 className="text-[12px] font-semibold uppercase tracking-[0.1em] text-muted">
-            {dict.auth.nextTitle}
-          </h3>
-          <ol className="mt-2 space-y-1.5">
-            {dict.auth.nextSteps.map((step, index) => (
-              <li key={step} className="flex items-start gap-2 text-[12px] text-ink/85">
-                <span className="grid size-4 shrink-0 place-items-center rounded-full bg-[var(--elevated)] text-[9px] text-muted num">
-                  {index + 1}
-                </span>
-                {step}
-              </li>
-            ))}
-          </ol>
         </div>
 
         <div className="mt-5 flex flex-col gap-2 sm:flex-row">
@@ -207,8 +184,9 @@ export function SignupForm({ initialPlan }: { initialPlan: PlanId }) {
         <span>
           {TRIAL.days} {lang === "uz" ? "kun · karta shart emas" : "дней · карта не нужна"}
         </span>
-        <span className="rounded border border-warning/30 px-1.5 py-0.5 text-[9px] text-warning">
-          {dict.common.todo}
+        <span className="inline-flex items-center gap-1 text-emerald-ink">
+          <BadgeCheck className="size-3" aria-hidden />
+          {dict.auth.loginDemoTitle}
         </span>
       </div>
       <p className="text-[10px] leading-relaxed text-muted">{dict.auth.note}</p>

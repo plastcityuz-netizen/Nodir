@@ -1,13 +1,18 @@
 import type { MetadataRoute } from "next";
-
-const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://balans.ai";
+import { SITE_URL } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const routes = ["", "/narxlar", "/kirish", "/royxatdan-otish", "/maxfiylik", "/shartlar"];
+  const routes: { path: string; priority: number; changeFrequency: "weekly" | "monthly" }[] = [
+    { path: "", priority: 1, changeFrequency: "weekly" },
+    { path: "/narxlar", priority: 0.9, changeFrequency: "monthly" },
+    { path: "/maxfiylik", priority: 0.3, changeFrequency: "monthly" },
+    { path: "/shartlar", priority: 0.3, changeFrequency: "monthly" },
+  ];
+
   return routes.map((route) => ({
-    url: `${BASE}${route}`,
-    lastModified: new Date("2026-11-20"),
-    changeFrequency: route === "" ? "weekly" : "monthly",
-    priority: route === "" ? 1 : route === "/narxlar" ? 0.9 : 0.6,
+    url: `${SITE_URL}${route.path}`,
+    lastModified: new Date("2026-11-22"),
+    changeFrequency: route.changeFrequency,
+    priority: route.priority,
   }));
 }
