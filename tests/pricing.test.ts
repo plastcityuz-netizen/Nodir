@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   ADDONS,
   PLANS,
+  PLAN_LIMITS,
   TRIAL,
+  formatPlanLimit,
   getPlan,
   isWithinLimit,
   monthlyEquivalent,
@@ -44,8 +46,11 @@ describe("tarif konfiguratsiyasi", () => {
     expect(TRIAL.reminders).toEqual([7, 3, 1]);
   });
 
-  it("qo‘shimcha xizmatlar narxi", () => {
+  it("qo‘shimcha xizmatlar narxi va davriyligi", () => {
     expect(ADDONS.map((addon) => addon.price)).toEqual([59_000, 290_000, 990_000]);
+    expect(ADDONS.map((addon) => addon.cadence)).toEqual(["month", "month", "once"]);
+    expect(ADDONS[0].unit).toEqual({ uz: "oy", ru: "мес" });
+    expect(ADDONS[2].unit.ru).toBe("разово");
   });
 });
 
@@ -55,9 +60,26 @@ describe("limitlar", () => {
     expect(isWithinLimit("start", { users: 4, companies: 1, aiQuestions: 30 })).toBe(false);
   });
 
-  it("Premium AI limiti cheksiz, lekin kompaniya 3 ta", () => {
-    expect(isWithinLimit("premium", { users: 30, companies: 3, aiQuestions: 9999 })).toBe(true);
+  it("Premium AI limiti aniq, kompaniya 3 ta", () => {
+    expect(isWithinLimit("premium", { users: 30, companies: 3, aiQuestions: 2_000 })).toBe(true);
+    expect(isWithinLimit("premium", { users: 30, companies: 3, aiQuestions: 2_001 })).toBe(false);
     expect(isWithinLimit("premium", { users: 30, companies: 4, aiQuestions: 0 })).toBe(false);
+  });
+
+  it("limitlar faqat PLANS dan hosil qilinadi", () => {
+    for (const plan of PLANS) {
+      expect(PLAN_LIMITS[plan.id]).toEqual(plan.limits);
+    }
+  });
+
+  it("standart tariflarda “cheksiz” da’vosi yo‘q", () => {
+    for (const plan of PLANS.filter((item) => !item.custom)) {
+      expect(plan.limits.users).not.toBeNull();
+      expect(plan.limits.companies).not.toBeNull();
+      expect(plan.limits.aiQuestions).not.toBeNull();
+    }
+    expect(formatPlanLimit(2_000, "uz", "aiQuestions")).toBe("2 000 savol/oy");
+    expect(formatPlanLimit(null, "uz", "users")).toBe("Kelishuv bo‘yicha");
   });
 
   it("limitga yaqinlashganda yumshoq upsell", () => {

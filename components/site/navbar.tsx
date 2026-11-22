@@ -3,7 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight, Menu, Search, X } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/brand/logo";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { useCommand } from "@/components/site/command-palette";
@@ -17,6 +17,9 @@ export function Navbar() {
   const reduce = useReducedMotion();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -28,14 +31,37 @@ export function Navbar() {
   useEffect(() => {
     if (!menuOpen) return;
     const previous = document.body.style.overflow;
+    const trigger = triggerRef.current;
     document.body.style.overflow = "hidden";
+    closeRef.current?.focus();
+
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const nodes = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (!nodes?.length) return;
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
+
     document.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = previous;
       document.removeEventListener("keydown", onKey);
+      trigger?.focus();
     };
   }, [menuOpen]);
 
@@ -62,7 +88,7 @@ export function Navbar() {
             <Logo />
           </Link>
 
-          <nav aria-label="Asosiy" className="hidden items-center gap-1 lg:flex">
+          <nav aria-label={dict.nav.mainNav} className="hidden items-center gap-1 lg:flex">
             {links.map((link) => (
               <Link
                 key={link.href}
@@ -97,6 +123,7 @@ export function Navbar() {
               <ArrowUpRight className="size-3.5" aria-hidden />
             </ButtonLink>
             <button
+              ref={triggerRef}
               type="button"
               onClick={() => setMenuOpen(true)}
               aria-label={dict.nav.openMenu}
@@ -123,6 +150,7 @@ export function Navbar() {
               className="absolute inset-0 cursor-default bg-[#03060c]/65 backdrop-blur-sm"
             />
             <motion.div
+              ref={dialogRef}
               id="mobile-menu"
               role="dialog"
               aria-modal="true"
@@ -137,6 +165,7 @@ export function Navbar() {
               <div className="mb-4 flex items-center justify-between">
                 <Logo />
                 <button
+                  ref={closeRef}
                   type="button"
                   onClick={() => setMenuOpen(false)}
                   aria-label={dict.nav.close}
@@ -146,7 +175,7 @@ export function Navbar() {
                 </button>
               </div>
 
-              <nav aria-label="Mobil" className="flex flex-col">
+              <nav aria-label={dict.nav.mobileNav} className="flex flex-col">
                 {links.map((link) => (
                   <Link
                     key={link.href}

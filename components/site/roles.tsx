@@ -115,7 +115,7 @@ export function Roles() {
                   {active.name} · {dict.mock.dashboard}
                 </span>
                 <span className="rounded bg-emerald-soft px-1.5 py-0.5 text-[8.5px] text-emerald-ink">
-                  RBAC
+                  {dict.roles.badge}
                 </span>
               </div>
               <div className="mt-3 grid gap-1.5 sm:grid-cols-3">

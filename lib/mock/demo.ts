@@ -3,7 +3,7 @@
  * tushum − xarajat = sof foyda; xarajat toifalari yig‘indisi = jami xarajat.
  */
 export const DEMO_COMPANY = {
-  name: "MCHJ «Nur Tekstil»",
+  name: { uz: "MCHJ «Nur Tekstil»", ru: "ООО «Nur Tekstil»" },
   city: "Toshkent",
   tin: "301234567",
   period: "01–20.11.2026",
@@ -57,12 +57,12 @@ export const CASH_FLOW = CASH_POINTS.map((value, index) => ({
 
 /** Oylik tushum (mln so‘m) */
 export const SALES_TREND = [
-  { month: "Iyun", revenue: 1_180, profit: 214 },
-  { month: "Iyul", revenue: 1_246, profit: 238 },
-  { month: "Avgust", revenue: 1_198, profit: 226 },
-  { month: "Sentabr", revenue: 1_324, profit: 271 },
-  { month: "Oktabr", revenue: 1_373, profit: 278 },
-  { month: "Noyabr", revenue: 1_486, profit: 312.4 },
+  { key: "jun", month: { uz: "Iyun", ru: "Июнь" }, revenue: 1_180, profit: 214 },
+  { key: "jul", month: { uz: "Iyul", ru: "Июль" }, revenue: 1_246, profit: 238 },
+  { key: "aug", month: { uz: "Avgust", ru: "Август" }, revenue: 1_198, profit: 226 },
+  { key: "sep", month: { uz: "Sentabr", ru: "Сентябрь" }, revenue: 1_324, profit: 271 },
+  { key: "oct", month: { uz: "Oktabr", ru: "Октябрь" }, revenue: 1_373, profit: 278 },
+  { key: "nov", month: { uz: "Noyabr", ru: "Ноябрь" }, revenue: 1_486, profit: 312.4 },
 ];
 
 export const SCORE_PARTS = [
@@ -79,9 +79,24 @@ export const UPCOMING_PAYMENTS = [
 ] as const;
 
 export const DEBTORS = [
-  { name: "«Baraka Savdo» MCHJ", amount: 27_800_000, days: 21 },
-  { name: "«Farg‘ona Textile» MCHJ", amount: 12_400_000, days: 12 },
-  { name: "«Samarqand Bozor» YaTT", amount: 8_000_000, days: 6 },
+  {
+    name: { uz: "«Baraka Savdo»", ru: "«Baraka Savdo»" },
+    legal: { uz: "MCHJ", ru: "ООО" },
+    amount: 27_800_000,
+    days: 21,
+  },
+  {
+    name: { uz: "«Farg‘ona Textile»", ru: "«Фаргона Текстиль»" },
+    legal: { uz: "MCHJ", ru: "ООО" },
+    amount: 12_400_000,
+    days: 12,
+  },
+  {
+    name: { uz: "«Samarqand Bozor»", ru: "«Самарканд Бозор»" },
+    legal: { uz: "YaTT", ru: "ИП" },
+    amount: 8_000_000,
+    days: 6,
+  },
 ];
 
 export const TOP_EXPENSES = [
@@ -96,3 +111,65 @@ export const DEFECT_TREND = [2.9, 2.7, 2.6, 2.4, 2.2, 2.1, 1.9, 1.8];
 
 /** Balans Score yarim doira geometriyasi uchun */
 export const SCORE_MAX = 100;
+
+/** Demo operatsiyalar — jadval filtri va qidiruvni sinash uchun. */
+export type DemoTransactionType = "income" | "expense" | "tax" | "payroll";
+export type DemoTransactionStatus = "paid" | "pending" | "planned";
+
+export const TRANSACTIONS: {
+  id: string;
+  date: string;
+  name: { uz: string; ru: string };
+  type: DemoTransactionType;
+  status: DemoTransactionStatus;
+  amount: number;
+}[] = [
+  {
+    id: "tx-1041",
+    date: "20.11.2026",
+    name: { uz: "«Baraka Savdo» — to‘lov", ru: "«Baraka Savdo» — оплата" },
+    type: "income",
+    status: "paid",
+    amount: 27_800_000,
+  },
+  {
+    id: "tx-1040",
+    date: "19.11.2026",
+    name: { uz: "Xomashyo xaridi — «Farg‘ona Textile»", ru: "Закупка сырья — «Фаргона Текстиль»" },
+    type: "expense",
+    status: "paid",
+    amount: 46_200_000,
+  },
+  {
+    id: "tx-1039",
+    date: "18.11.2026",
+    name: { uz: "QQS avans to‘lovi", ru: "Авансовый платёж НДС" },
+    type: "tax",
+    status: "pending",
+    amount: 18_400_000,
+  },
+  {
+    id: "tx-1038",
+    date: "17.11.2026",
+    name: { uz: "Noyabr ish haqi — 48 xodim", ru: "Зарплата за ноябрь — 48 сотрудников" },
+    type: "payroll",
+    status: "planned",
+    amount: 312_000_000,
+  },
+  {
+    id: "tx-1037",
+    date: "16.11.2026",
+    name: { uz: "«Samarqand Bozor» — to‘lov", ru: "«Samarqand Bozor» — оплата" },
+    type: "income",
+    status: "paid",
+    amount: 8_000_000,
+  },
+  {
+    id: "tx-1036",
+    date: "15.11.2026",
+    name: { uz: "Logistika — Toshkent–Farg‘ona", ru: "Логистика — Ташкент–Фергана" },
+    type: "expense",
+    status: "paid",
+    amount: 12_600_000,
+  },
+];

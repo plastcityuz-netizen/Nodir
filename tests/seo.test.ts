@@ -20,6 +20,16 @@ describe("SEO metadata", () => {
     );
   });
 
+  it("demo kabinet indekslanmaydi", () => {
+    const meta = pageMetadata({
+      title: "Demo kabinet",
+      description: "Demo",
+      path: "/dashboard",
+      noindex: true,
+    });
+    expect(meta.robots).toEqual({ index: false, follow: false });
+  });
+
   it("auth sahifalari indekslanmaydi", () => {
     const meta = pageMetadata({
       title: "Kirish",
@@ -36,6 +46,7 @@ describe("SEO metadata", () => {
     expect(urls).toContain(`${SITE_URL}/maxfiylik`);
     expect(urls.some((url) => url.includes("/kirish"))).toBe(false);
     expect(urls.some((url) => url.includes("/royxatdan-otish"))).toBe(false);
+    expect(urls.some((url) => url.includes("/dashboard"))).toBe(false);
   });
 
   it("robots auth sahifalarini yopadi va sitemap’ni ko‘rsatadi", () => {

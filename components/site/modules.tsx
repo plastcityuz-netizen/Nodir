@@ -120,9 +120,14 @@ function Mini({ id }: { id: string }) {
     case "warehouse":
       return (
         <div className="space-y-2">
-          <Stock label="Paxta ip 32/1" percent={64} value="8 240 kg" />
-          <Stock label="Bo‘yoq · indigo" percent={28} value="184 kg" />
-          <Stock label="Qadoq" percent={82} value="12 800 dona" />
+          {mini.stockItems.map((item, index) => (
+            <Stock
+              key={item.name}
+              label={item.name}
+              percent={[64, 28, 82][index] ?? 0}
+              value={item.value}
+            />
+          ))}
         </div>
       );
     case "purchase":

@@ -8,7 +8,7 @@ import { I18nProvider } from "@/components/providers/i18n-provider";
 import { MotionProvider } from "@/components/providers/motion-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { getI18n, HTML_LANG, OG_LOCALE } from "@/lib/i18n/server";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -56,7 +56,7 @@ export async function generateMetadata(): Promise<Metadata> {
           url: `${SITE_URL}/opengraph-image`,
           width: 1200,
           height: 630,
-          alt: "BALANS AI — AI buxgalteriya va biznes boshqaruv platformasi",
+          alt: dict.meta.title,
         },
       ],
     },
@@ -73,7 +73,7 @@ export async function generateMetadata(): Promise<Metadata> {
 const themeScript = `(function(){try{var k='balans_theme';var s=localStorage.getItem(k);var prefersLight=window.matchMedia('(prefers-color-scheme: light)').matches;var t=(s==='light'||s==='dark')?s:(prefersLight?'light':'dark');var e=document.documentElement;e.classList.remove('dark','light');e.classList.add(t);e.style.colorScheme=t;var c=navigator.connection||navigator.mozConnection;if((navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4)||(navigator.deviceMemory&&navigator.deviceMemory<=4)||(c&&c.saveData)){e.classList.add('lite')}}catch(err){}})();`;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const { lang } = await getI18n();
+  const { lang, dict } = await getI18n();
 
   return (
     <html lang={HTML_LANG[lang]} suppressHydrationWarning>
@@ -138,14 +138,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   name: SITE_NAME,
                   url: SITE_URL,
                   logo: `${SITE_URL}/icon.svg`,
-                  description: SITE_DESCRIPTION,
+                  description: dict.meta.description,
                 },
                 {
                   "@type": "WebSite",
                   name: SITE_NAME,
                   url: SITE_URL,
                   inLanguage: HTML_LANG[lang],
-                  description: SITE_DESCRIPTION,
+                  description: dict.meta.description,
                 },
               ],
             }),
@@ -155,7 +155,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           href="#asosiy"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-lg focus:bg-emerald-fill focus:px-4 focus:py-2 focus:text-[#04130E]"
         >
-          Asosiy kontentga o‘tish
+          {dict.a11y.skip}
         </a>
         <I18nProvider initialLang={lang}>
           <MotionProvider>

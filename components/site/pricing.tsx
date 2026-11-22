@@ -10,8 +10,9 @@ import { ArrowRight, ButtonLink } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { SegmentedSwitch } from "@/components/ui/switch";
-import { money } from "@/lib/format";
-import { ADDONS, PLANS, TRIAL, monthlyEquivalent, type Plan } from "@/lib/pricing.config";
+import { CURRENCY_LABEL, money } from "@/lib/format";
+import { ADDONS, PLANS, monthlyEquivalent, planLimit, type Plan } from "@/lib/pricing.config";
+import { trialChip } from "@/lib/offer";
 
 type Billing = "monthly" | "yearly";
 
@@ -41,7 +42,7 @@ function PlanCard({
           {money(price ?? 0, lang, { withLabel: false })}
         </span>
         <span className="text-[12px] text-muted">
-          {lang === "uz" ? "so‘m" : "сум"} / {billing === "monthly" ? dict.common.month : dict.common.yearly}
+          {CURRENCY_LABEL[lang]} / {billing === "monthly" ? dict.common.month : dict.common.yearly}
         </span>
       </div>
       <p className="mt-1 h-4 text-[10.5px] text-muted">
@@ -104,15 +105,15 @@ function PlanCard({
       <ul className="mt-4 space-y-2 border-t border-[var(--border)] pt-4">
         <li className="flex items-start justify-between gap-2 text-[11.5px]">
           <span className="text-muted">{dict.pricing.labels.companies}</span>
-          <span className="text-right font-medium text-ink">{plan.companies[lang]}</span>
+          <span className="text-right font-medium text-ink">{planLimit(plan, "companies", lang)}</span>
         </li>
         <li className="flex items-start justify-between gap-2 text-[11.5px]">
           <span className="text-muted">{dict.pricing.labels.users}</span>
-          <span className="text-right font-medium text-ink">{plan.users[lang]}</span>
+          <span className="text-right font-medium text-ink">{planLimit(plan, "users", lang)}</span>
         </li>
         <li className="flex items-start justify-between gap-2 text-[11.5px]">
           <span className="text-muted">{dict.pricing.labels.ai}</span>
-          <span className="max-w-[60%] text-right font-medium text-ink">{plan.ai[lang]}</span>
+          <span className="max-w-[60%] text-right font-medium text-ink">{planLimit(plan, "aiQuestions", lang)}</span>
         </li>
         <li className="pt-1">
           <span className="text-[10.5px] text-muted">{dict.pricing.labels.modules}</span>
@@ -126,6 +127,21 @@ function PlanCard({
 export function Pricing({ detailed = false }: { detailed?: boolean }) {
   const { dict, lang } = useI18n();
   const [billing, setBilling] = useState<Billing>("monthly");
+  const compareRows = [
+    {
+      label: dict.pricing.labels.companies,
+      values: PLANS.map((plan) => planLimit(plan, "companies", lang)),
+    },
+    {
+      label: dict.pricing.labels.users,
+      values: PLANS.map((plan) => planLimit(plan, "users", lang)),
+    },
+    {
+      label: dict.pricing.labels.ai,
+      values: PLANS.map((plan) => planLimit(plan, "aiQuestions", lang)),
+    },
+    ...dict.pricing.compareFeatures,
+  ];
 
   return (
     <section id="narxlar" className={clsx("relative", detailed ? "pt-28 sm:pt-32 lg:pt-36" : "section")}>
@@ -198,20 +214,25 @@ export function Pricing({ detailed = false }: { detailed?: boolean }) {
                 <h3 className="text-[13px] font-semibold text-ink">{dict.pricing.addonsTitle}</h3>
               </div>
               <ul className="mt-3 grid gap-2 sm:grid-cols-3">
-                {dict.pricing.addons.map((addon, index) => (
-                  <li key={addon.title} className="rounded-lg border border-[var(--border)] px-2.5 py-2">
-                    <div className="text-[10.5px] text-muted">{addon.title}</div>
-                    <div className="mt-0.5 text-[11px] font-medium text-ink num">
-                      {money(ADDONS[index]?.price ?? 0, lang)} ·{" "}
-                      {index === 2 ? (lang === "uz" ? "bir martalik" : "разово") : dict.common.perMonth}
-                    </div>
-                  </li>
-                ))}
+                {dict.pricing.addons.map((addon, index) => {
+                  const item = ADDONS[index];
+                  if (!item) return null;
+                  const price =
+                    item.cadence === "month"
+                      ? `${money(item.price, lang, { withLabel: false })} ${CURRENCY_LABEL[lang]}/${item.unit[lang]}`
+                      : `${money(item.price, lang)} · ${item.unit[lang]}`;
+                  return (
+                    <li key={addon.title} className="rounded-lg border border-[var(--border)] px-2.5 py-2">
+                      <div className="text-[10.5px] text-muted">{addon.title}</div>
+                      <div className="mt-0.5 text-[11px] font-medium text-ink num">{price}</div>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
             <div className="flex flex-col items-start gap-2 sm:items-end">
               <span className="rounded-full border border-[var(--border)] px-2.5 py-1 text-[9.5px] text-muted">
-                {TRIAL.days} {lang === "uz" ? "kun bepul" : "дней бесплатно"}
+                {trialChip(lang)}
               </span>
               <ButtonLink href="/royxatdan-otish" size="sm">
                 {dict.common.start}
@@ -268,7 +289,7 @@ export function Pricing({ detailed = false }: { detailed?: boolean }) {
                       </tr>
                     </thead>
                     <tbody>
-                      {dict.pricing.compareFeatures.map((feature, index) => (
+                      {compareRows.map((feature, index) => (
                         <tr
                           key={feature.label}
                           className={clsx(
@@ -303,7 +324,7 @@ export function Pricing({ detailed = false }: { detailed?: boolean }) {
                 </div>
 
                 <div className="mt-5 space-y-2 md:hidden">
-                  {dict.pricing.compareFeatures.map((feature) => (
+                  {compareRows.map((feature) => (
                     <details key={feature.label} className="group rounded-xl border border-[var(--border)] bg-[var(--surface)]">
                       <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between px-3.5 py-3 text-[12px] font-medium text-ink">
                         {feature.label}

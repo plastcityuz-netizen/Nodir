@@ -5,11 +5,14 @@ import {
   ArrowUpRight,
   BellRing,
   Database,
+  Info,
+  RotateCcw,
   Send,
   ShieldCheck,
   Sparkles,
   TrendingUp,
 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { useToast } from "@/components/providers/toast-provider";
@@ -17,8 +20,9 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { Reveal } from "@/components/ui/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { DEBTORS } from "@/lib/mock/demo";
-import { formatPercent, money } from "@/lib/format";
+import { DEBTORS, EXPENSE_LABELS, KPI } from "@/lib/mock/demo";
+import { formatNumber, formatPercent, money } from "@/lib/format";
+import { getPlan, planLimit } from "@/lib/pricing.config";
 
 type Chart = "expense" | "debt" | "scenario";
 
@@ -43,9 +47,9 @@ function ChartPreview({ chart }: { chart: Chart }) {
 
   if (chart === "expense") {
     const rows = [
-      { label: lang === "uz" ? "Xomashyo" : "Сырьё", value: 246, delta: 32, tone: "text-danger" },
-      { label: lang === "uz" ? "Ish haqi" : "Зарплата", value: 312, delta: 2, tone: "text-muted" },
-      { label: lang === "uz" ? "Boshqa" : "Прочее", value: 615.6, delta: 0, tone: "text-muted" },
+      { label: EXPENSE_LABELS.materials[lang], value: 246, delta: 32, tone: "text-danger" },
+      { label: EXPENSE_LABELS.payroll[lang], value: 312, delta: 2, tone: "text-muted" },
+      { label: EXPENSE_LABELS.other[lang], value: 615.6, delta: 0, tone: "text-muted" },
     ];
     return (
       <div className="mt-2 space-y-1.5">
@@ -59,7 +63,7 @@ function ChartPreview({ chart }: { chart: Chart }) {
               />
             </div>
             <span className="w-[56px] shrink-0 text-right text-[9.5px] text-ink num">
-              {row.value.toFixed(1).replace(".", ",")} mln
+              {formatNumber(row.value, 1)} {dict.mock.mln}
             </span>
             <span className={`w-[44px] shrink-0 text-right text-[9.5px] ${row.delta > 10 ? "text-danger" : "text-muted"} num`}>
               {row.delta ? formatPercent(row.delta) : "—"}
@@ -75,10 +79,12 @@ function ChartPreview({ chart }: { chart: Chart }) {
       <div className="mt-2 overflow-hidden rounded-lg border border-[var(--border)]">
         {DEBTORS.map((debtor) => (
           <div
-            key={debtor.name}
+            key={debtor.name.uz}
             className="flex items-center justify-between gap-2 border-b border-[var(--border)] px-2.5 py-1.5 last:border-0"
           >
-            <span className="truncate text-[10px] text-ink/85">{debtor.name}</span>
+            <span className="truncate text-[10px] text-ink/85">
+              {debtor.name[lang]} {debtor.legal[lang]}
+            </span>
             <span className="shrink-0 text-[10px] font-medium text-ink num">
               {money(debtor.amount, lang, { compact: true })}
             </span>
@@ -94,9 +100,9 @@ function ChartPreview({ chart }: { chart: Chart }) {
   return (
     <div className="mt-2 grid grid-cols-3 gap-1.5">
       {[
-        { label: lang === "uz" ? "Tushum" : "Выручка", value: "+41,2 mln" },
-        { label: lang === "uz" ? "Sof foyda" : "Чистая прибыль", value: "+9,8%" },
-        { label: lang === "uz" ? "Hajm −3% bo‘lsa" : "Если объём −3%", value: "+5,1%" },
+        { label: dict.hero.kpiRevenue, value: `+41,2 ${dict.mock.mln}` },
+        { label: dict.hero.kpiProfit, value: "+9,8%" },
+        { label: dict.ai.scenarioVolume, value: "+5,1%" },
       ].map((item) => (
         <div key={item.label} className="rounded-lg border border-[var(--border)] bg-[color-mix(in_srgb,var(--elevated)_40%,transparent)] px-2 py-1.5">
           <div className="text-[8.5px] leading-tight text-muted">{item.label}</div>
@@ -107,24 +113,32 @@ function ChartPreview({ chart }: { chart: Chart }) {
   );
 }
 
+const MAX_QUESTION_LENGTH = 300;
+
 export function AiCfo() {
-  const { dict } = useI18n();
+  const { dict, lang } = useI18n();
   const { push } = useToast();
   const reduce = useReducedMotion();
-  const { lang } = useI18n();
   const [messages, setMessages] = useState<Message[]>([
     { id: nextId(), role: "ai", text: dict.ai.greeting },
   ]);
   const [typing, setTyping] = useState(false);
   const [input, setInput] = useState("");
+  const [error, setError] = useState("");
   const [openSource, setOpenSource] = useState<Record<string, boolean>>({});
   const [confirmOpen, setConfirmOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
+  const busyRef = useRef(false);
+  const demoPlan = getPlan("business");
 
   useEffect(() => {
+    timers.current.forEach((timer) => window.clearTimeout(timer));
+    timers.current = [];
     setMessages([{ id: nextId(), role: "ai", text: dict.ai.greeting }]);
+    busyRef.current = false;
     setTyping(false);
+    setError("");
     setOpenSource({});
   }, [lang, dict.ai.greeting]);
 
@@ -141,10 +155,13 @@ export function AiCfo() {
   }, []);
 
   const ask = (question: string, answerIndex: number | null) => {
-    if (typing) return;
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setError("");
     setMessages((list) => [...list, { id: nextId(), role: "user", text: question }]);
     setTyping(true);
     const timer = window.setTimeout(() => {
+      busyRef.current = false;
       setTyping(false);
       if (answerIndex === null) {
         setMessages((list) => [
@@ -172,10 +189,33 @@ export function AiCfo() {
 
   const onSubmit = (event: React.FormEvent) => {
     event.preventDefault();
+    if (typing) return;
     const value = input.trim();
-    if (!value) return;
+    if (!value) {
+      setError(dict.ai.emptyError);
+      return;
+    }
+    if (value.length > MAX_QUESTION_LENGTH) {
+      setError(dict.ai.tooLongError);
+      return;
+    }
+    if (!/\p{L}/u.test(value)) {
+      setError(dict.ai.noLettersError);
+      return;
+    }
     setInput("");
     ask(value, null);
+  };
+
+  const resetChat = () => {
+    timers.current.forEach((timer) => window.clearTimeout(timer));
+    timers.current = [];
+    setMessages([{ id: nextId(), role: "ai", text: dict.ai.greeting }]);
+    busyRef.current = false;
+    setTyping(false);
+    setInput("");
+    setError("");
+    setOpenSource({});
   };
 
   return (
@@ -201,23 +241,35 @@ export function AiCfo() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-[13px] font-semibold text-ink">{dict.ai.chatTitle}</span>
-                      <span className="inline-flex items-center gap-1 rounded-full border border-emerald/25 bg-emerald-soft px-1.5 py-0.5 text-[8.5px] font-medium text-emerald-ink">
-                        <span className="size-1 rounded-full bg-emerald" aria-hidden />
-                        Premium
+                      <span className="inline-flex items-center gap-1 rounded-full border border-warning/30 bg-[color-mix(in_srgb,var(--warning)_10%,transparent)] px-1.5 py-0.5 text-[8.5px] font-medium text-warning">
+                        <span className="size-1 rounded-full bg-warning" aria-hidden />
+                        {dict.ai.demoBadge}
                       </span>
                     </div>
                     <p className="mt-0.5 text-[10px] text-muted">{dict.ai.chatStatus}</p>
                   </div>
                 </div>
-                <span className="hidden rounded-md border border-[var(--border)] px-2 py-1 text-[9px] text-muted sm:block">
-                  {dict.ai.quota}
-                </span>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <span className="hidden rounded-md border border-[var(--border)] px-2 py-1 text-[9px] text-muted sm:block">
+                    {dict.ai.quota}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={resetChat}
+                    aria-label={dict.ai.clear}
+                    title={dict.ai.clear}
+                    className="grid size-8 place-items-center rounded-lg border border-[var(--border)] text-muted transition hover:border-[var(--border-strong)] hover:text-ink"
+                  >
+                    <RotateCcw className="size-3.5" aria-hidden />
+                  </button>
+                </div>
               </div>
 
               <div
                 ref={scrollRef}
                 className="min-h-[280px] max-h-[380px] flex-1 space-y-3 overflow-y-auto px-3.5 py-4 sm:max-h-[420px] sm:px-4"
                 aria-live="polite"
+                aria-busy={typing}
               >
                 {messages.map((message) => (
                   <div key={message.id} className={message.role === "user" ? "flex justify-end" : "flex justify-start"}>
@@ -225,16 +277,27 @@ export function AiCfo() {
                       className={
                         message.role === "user"
                           ? "max-w-[85%] rounded-2xl rounded-br-md border border-[var(--border)] bg-[var(--elevated)] px-3 py-2 text-[11.5px] text-ink"
-                          : "max-w-[92%] rounded-2xl rounded-bl-md border border-violet/20 bg-[color-mix(in_srgb,var(--violet)_6%,var(--surface))] px-3 py-2.5"
+                          : message.fallback
+                            ? "max-w-[92%] rounded-2xl rounded-bl-md border border-warning/30 bg-[color-mix(in_srgb,var(--warning)_7%,var(--surface))] px-3 py-2.5"
+                            : "max-w-[92%] rounded-2xl rounded-bl-md border border-violet/20 bg-[color-mix(in_srgb,var(--violet)_6%,var(--surface))] px-3 py-2.5"
                       }
                     >
                       {message.role === "ai" && (
                         <div className="mb-1 flex items-center gap-1.5 text-[8.5px] font-semibold uppercase tracking-[0.12em] text-violet">
                           <Sparkles className="size-2.5" aria-hidden />
                           AI CFO
+                          <span className="rounded border border-[var(--border)] px-1 py-px text-[7.5px] font-medium normal-case tracking-normal text-muted">
+                            {dict.ai.demoLabel}
+                          </span>
                         </div>
                       )}
                       <p className="text-[11.5px] leading-relaxed text-ink/90">{message.text}</p>
+                      {message.fallback && (
+                        <p className="mt-1.5 flex items-start gap-1.5 text-[9px] leading-relaxed text-warning">
+                          <Info className="mt-px size-3 shrink-0" aria-hidden />
+                          {dict.ai.demoNotice}
+                        </p>
+                      )}
                       {message.chart && <ChartPreview chart={message.chart} />}
 
                       {message.source && (
@@ -277,16 +340,13 @@ export function AiCfo() {
                             <BellRing className="size-3" aria-hidden />
                             {dict.ai.sendNote}
                           </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              push(dict.ai.toastView, "info")
-                            }
+                          <Link
+                            href="/dashboard"
                             className="inline-flex items-center gap-1 rounded-lg border border-[var(--border)] px-2.5 py-1.5 text-[10px] text-ink/85 transition hover:border-[var(--border-strong)]"
                           >
                             {dict.ai.view}
                             <ArrowUpRight className="size-3" aria-hidden />
-                          </button>
+                          </Link>
                         </div>
                       )}
                     </div>
@@ -319,7 +379,8 @@ export function AiCfo() {
                       key={suggestion}
                       type="button"
                       onClick={() => ask(suggestion, index)}
-                      className="shrink-0 rounded-full border border-[var(--border)] bg-[color-mix(in_srgb,var(--elevated)_60%,transparent)] px-2.5 py-1.5 text-[10px] text-ink/85 transition hover:border-violet/40 hover:text-ink"
+                      disabled={typing}
+                      className="shrink-0 rounded-full border border-[var(--border)] bg-[color-mix(in_srgb,var(--elevated)_60%,transparent)] px-2.5 py-1.5 text-[10px] text-ink/85 transition hover:border-violet/40 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {suggestion}
                     </button>
@@ -328,22 +389,38 @@ export function AiCfo() {
                 <form onSubmit={onSubmit} className="flex items-center gap-2">
                   <input
                     value={input}
-                    onChange={(event) => setInput(event.target.value)}
+                    onChange={(event) => {
+                      setInput(event.target.value);
+                      if (error) setError("");
+                    }}
                     placeholder={dict.ai.inputPlaceholder}
                     aria-label={dict.ai.inputPlaceholder}
-                    className="h-11 min-w-0 flex-1 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-[16px] text-ink outline-none transition placeholder:text-[11.5px] placeholder:text-muted/70 focus:border-violet/50 focus:ring-4 focus:ring-violet/10 sm:text-[12.5px]"
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? "ai-cfo-error" : undefined}
+                    maxLength={MAX_QUESTION_LENGTH}
+                    autoComplete="off"
+                    className="h-11 min-w-0 flex-1 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-[16px] text-ink outline-none transition placeholder:text-[11.5px] placeholder:text-muted/70 focus:border-violet/50 focus:ring-4 focus:ring-violet/10 aria-invalid:border-danger/60 sm:text-[12.5px]"
                   />
                   <Button
                     type="submit"
                     size="sm"
                     aria-label={dict.common.send}
-                    disabled={!input.trim()}
+                    disabled={typing}
                     className="size-11 shrink-0 rounded-xl p-0"
                   >
                     <Send className="size-4" aria-hidden />
                   </Button>
                 </form>
+                {error && (
+                  <p id="ai-cfo-error" role="alert" className="mt-2 text-[10px] text-danger">
+                    {error}
+                  </p>
+                )}
                 <p className="mt-2 flex items-start gap-1.5 text-[9px] leading-relaxed text-muted">
+                  <Info className="mt-px size-3 shrink-0 text-warning" aria-hidden />
+                  {dict.ai.demoNotice}
+                </p>
+                <p className="mt-1.5 flex items-start gap-1.5 text-[9px] leading-relaxed text-muted">
                   <ShieldCheck className="mt-px size-3 shrink-0 text-emerald-ink" aria-hidden />
                   {dict.ai.disclaimer}
                 </p>
@@ -400,14 +477,20 @@ export function AiCfo() {
                     <div className="text-[11px] font-medium text-ink">
                       {dict.roles.title}
                     </div>
-                    <div className="text-[9.5px] text-muted">{dict.roles.matrixNote}</div>
+                    <div className="text-[9.5px] text-muted">{dict.ai.workspaceNote}</div>
                   </div>
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-1.5">
                   {[
-                    { label: dict.pricing.labels.users, value: "10" },
-                    { label: dict.pricing.labels.companies, value: "1" },
-                    { label: "Balans Score", value: "78" },
+                    {
+                      label: dict.pricing.labels.users,
+                      value: planLimit(demoPlan, "users", lang),
+                    },
+                    {
+                      label: dict.pricing.labels.companies,
+                      value: planLimit(demoPlan, "companies", lang),
+                    },
+                    { label: "Balans Score", value: String(KPI.score) },
                   ].map((item) => (
                     <div key={item.label} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5">
                       <div className="text-[8.5px] leading-tight text-muted">{item.label}</div>

@@ -42,5 +42,13 @@ describe("production matnlari", () => {
     expect(ru.auth.demoNotice).toMatch(/демо/i);
     expect(uz.pricing.sub).toMatch(/30|birinchi oy|sinov/i);
     expect(ru.pricing.sub).toMatch(/пробн|первый месяц/i);
+    expect(uz.ai.demoNotice).toMatch(/demo|api/i);
+    expect(ru.ai.demoNotice).toMatch(/демо|api/i);
+  });
+
+  it("tarif matnlarida cheksizlik yoki tasdiqlanmagan sertifikat da’vosi yo‘q", () => {
+    const pricingText = [...strings(uz.pricing), ...strings(ru.pricing)].join(" ");
+    expect(pricingText).not.toMatch(/cheksiz|без лимита|unlimited/i);
+    expect(pricingText).not.toMatch(/AES-?256|TLS 1\.3|SOC ?2|ISO ?27001/i);
   });
 });

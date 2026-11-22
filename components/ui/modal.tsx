@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { X } from "lucide-react";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 
 export function Modal({
   open,
@@ -23,19 +23,50 @@ export function Modal({
 }) {
   const reduce = useReducedMotion();
   const panelRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const descriptionId = useId();
 
   useEffect(() => {
     if (!open) return;
+    const previousActive = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const panel = panelRef.current;
+    const focusableSelector =
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab" || !panel) return;
+      const nodes = Array.from(panel.querySelectorAll<HTMLElement>(focusableSelector)).filter(
+        (node) => node.offsetParent !== null,
+      );
+      if (nodes.length === 0) {
+        event.preventDefault();
+        panel.focus();
+        return;
+      }
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
+
     document.addEventListener("keydown", onKey);
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    panelRef.current?.focus();
+    panel?.focus();
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = previousOverflow;
+      previousActive?.focus();
     };
   }, [open, onClose]);
 
@@ -59,8 +90,8 @@ export function Modal({
             ref={panelRef}
             role="dialog"
             aria-modal="true"
-            aria-labelledby="modal-title"
-            aria-describedby={description ? "modal-description" : undefined}
+            aria-labelledby={titleId}
+            aria-describedby={description ? descriptionId : undefined}
             tabIndex={-1}
             initial={reduce ? undefined : { opacity: 0, y: 28, scale: 0.985 }}
             animate={reduce ? undefined : { opacity: 1, y: 0, scale: 1 }}
@@ -70,11 +101,11 @@ export function Modal({
           >
             <div className="mb-4 flex items-start justify-between gap-4">
               <div>
-                <h2 id="modal-title" className="t-h3 font-display text-ink">
+                <h2 id={titleId} className="t-h3 font-display text-ink">
                   {title}
                 </h2>
                 {description && (
-                  <p id="modal-description" className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
+                  <p id={descriptionId} className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
                     {description}
                   </p>
                 )}

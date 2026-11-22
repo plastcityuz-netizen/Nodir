@@ -6,6 +6,11 @@
 
 const NBSP = "\u00A0";
 
+const COMPACT_UNITS = {
+  uz: { billion: "mlrd", million: "mln", thousand: "ming" },
+  ru: { billion: "млрд", million: "млн", thousand: "тыс." },
+} as const;
+
 export const CURRENCY_LABEL = {
   uz: "so‘m",
   ru: "сум",
@@ -39,16 +44,17 @@ export function formatMoney(value: number, options: MoneyOptions = {}): string {
   const sign = signed ? (safe > 0 ? "+" : safe < 0 ? "−" : "") : safe < 0 ? "−" : "";
   const abs = Math.abs(safe);
   const label = withLabel ? `${NBSP}${CURRENCY_LABEL[currency]}` : "";
+  const units = COMPACT_UNITS[currency];
 
   if (compact) {
     if (abs >= 1_000_000_000) {
-      return `${sign}${formatDecimal(abs / 1_000_000_000, decimals ?? 1)}${NBSP}mlrd${label}`;
+      return `${sign}${formatDecimal(abs / 1_000_000_000, decimals ?? 1)}${NBSP}${units.billion}${label}`;
     }
     if (abs >= 1_000_000) {
-      return `${sign}${formatDecimal(abs / 1_000_000, decimals ?? 1)}${NBSP}mln${label}`;
+      return `${sign}${formatDecimal(abs / 1_000_000, decimals ?? 1)}${NBSP}${units.million}${label}`;
     }
     if (abs >= 1_000) {
-      return `${sign}${formatDecimal(abs / 1_000, decimals ?? 0)}${NBSP}ming${label}`;
+      return `${sign}${formatDecimal(abs / 1_000, decimals ?? 0)}${NBSP}${units.thousand}${label}`;
     }
     return `${sign}${formatDecimal(abs, decimals ?? 0)}${label}`;
   }
@@ -151,6 +157,11 @@ export function formatDelta(value: number): string {
 
 /** Ishorani so‘z bilan ham ko‘rsatish (faqat rangga tayanmaslik uchun) */
 export function trendLabel(value: number, lang: "uz" | "ru" = "uz"): string {
-  const word = value === 0 ? (lang === "ru" ? "без изменений" : "o‘zgarishsiz") : value > 0 ? (lang === "ru" ? "o‘sish" : "o‘sish") : lang === "ru" ? "pasayish" : "pasayish";
+  const word =
+    value === 0
+      ? lang === "ru" ? "без изменений" : "o‘zgarishsiz"
+      : value > 0
+        ? lang === "ru" ? "рост" : "o‘sish"
+        : lang === "ru" ? "снижение" : "pasayish";
   return `${formatDelta(value)} ${word}`;
 }
